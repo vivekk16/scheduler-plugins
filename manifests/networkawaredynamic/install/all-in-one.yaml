@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: network-aware-scheduler
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: network-aware-scheduler-plugins
+rules:
+  - apiGroups: [""]
+    resources: ["replicationcontrollers", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims", "persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes", "storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "" ]
+    resources: [ "configmaps" ]
+    verbs: [ "get", "list", "watch" ]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: network-aware-scheduler-plugins-clusterrolebinding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: network-aware-scheduler-plugins
+subjects:
+  - kind: ServiceAccount
+    name: network-aware-scheduler
+    namespace: default
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: network-aware-scheduler-clusterrolebinding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-scheduler
+subjects:
+  - kind: ServiceAccount
+    name: network-aware-scheduler
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: network-aware-scheduler-custom-plugins
+rules:
+  - apiGroups: ["scheduling.sigs.x-k8s.io"]
+    resources: ["podgroups", "elasticquotas", "podgroups/status", "elasticquotas/status"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["appgroup.diktyo.x-k8s.io"]
+    resources: ["appgroups"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["networktopology.diktyo.x-k8s.io"]
+    resources: ["networktopologies"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["scheduling.x-k8s.io"]
+    resources: ["podgroups", "elasticquotas", "podgroups/status", "elasticquotas/status"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: network-aware-scheduler-custom-plugins-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: network-aware-scheduler-custom-plugins
+subjects:
+  - kind: ServiceAccount
+    name: network-aware-scheduler
+    namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-aware-scheduler-config
+data:
+  config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    leaderElection:
+      leaderElect: false
+    profiles:
+      - schedulerName: network-aware-scheduler
+        plugins:
+          queueSort:
+            enabled:
+              - name: TopologicalSort
+            disabled:
+              - name: "*"
+          preFilter:
+            enabled:
+              - name: NetworkAwareDynamic
+          filter:
+            enabled:
+              - name: NetworkAwareDynamic       
+          score:
+            enabled:
+              - name: NetworkAwareDynamic
+            disabled:
+              - name: NodeResourcesFit
+        pluginConfig:
+          - name: TopologicalSort
+            args:
+              namespaces:
+                - "default"
+          - name: NetworkAwareDynamic
+            args:
+              namespaces:
+                - "default"
+              address: "http://<prometheus-server-address>"
+              port: "9962"
+              timeRangeInMinutes: "1m"
+              weightLatency: "0.3"
+              weightForwardBytes: "0.1"
+              weightDropBytes: "0.1"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-aware-scheduler
+  labels:
+    app: network-aware-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: network-aware-scheduler
+  template:
+    metadata:
+      labels:
+        app: network-aware-scheduler
+    spec:
+      serviceAccount: network-aware-scheduler
+      volumes:
+        - name: etckubernetes
+          configMap:
+            name: network-aware-scheduler-config
+      containers:
+        - name: network-aware-kube-scheduler
+          image: docker.io/vkarunai/network-aware-ks:latest
+          imagePullPolicy: Always
+          args:
+            - --config=/etc/kubernetes/config.yaml
+            - -v=6
+          volumeMounts:
+            - name: etckubernetes
+              mountPath: /etc/kubernetes

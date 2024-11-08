@@ -277,3 +277,27 @@ type SySchedArgs struct {
 	// CR name of the default profile for all system calls
 	DefaultProfileName *string `json:"defaultProfileName,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ScoreByLabelArgs holds arguments used to configure the ScoreByLabel plugin.
+type ScoreByLabelArgs struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// LabelKey is the name of the label to be used for scoring.
+	LabelKey *string `json:"labelKey,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+type NetworkAwareDynamicArgs struct {
+	metav1.TypeMeta
+
+	Namespaces         []string `json:"namespaces,omitempty"`
+	Address            string   `json:"address,omitempty"`
+	Port               string   `json:"port,omitempty"`
+	TimeRangeInMinutes string   `json:"timeRangeInMinutes,omitempty"`
+	WeightLatency      string   `json:"weightLatency,omitempty"`
+	WeightForwardBytes string   `json:"weightForwardBytes,omitempty"`
+	WeightDropBytes    string   `json:"weightDropBytes,omitempty"`
+}

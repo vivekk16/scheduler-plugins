@@ -34,6 +34,7 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 		SetObjectDefaults_LoadVariationRiskBalancingArgs(obj.(*LoadVariationRiskBalancingArgs))
 	})
 	scheme.AddTypeDefaultingFunc(&LowRiskOverCommitmentArgs{}, func(obj interface{}) { SetObjectDefaults_LowRiskOverCommitmentArgs(obj.(*LowRiskOverCommitmentArgs)) })
+	scheme.AddTypeDefaultingFunc(&NetworkAwareDynamicArgs{}, func(obj interface{}) { SetObjectDefaults_NetworkAwareDynamicArgs(obj.(*NetworkAwareDynamicArgs)) })
 	scheme.AddTypeDefaultingFunc(&NetworkOverheadArgs{}, func(obj interface{}) { SetObjectDefaults_NetworkOverheadArgs(obj.(*NetworkOverheadArgs)) })
 	scheme.AddTypeDefaultingFunc(&NodeResourceTopologyMatchArgs{}, func(obj interface{}) {
 		SetObjectDefaults_NodeResourceTopologyMatchArgs(obj.(*NodeResourceTopologyMatchArgs))
@@ -42,6 +43,7 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 		SetObjectDefaults_NodeResourcesAllocatableArgs(obj.(*NodeResourcesAllocatableArgs))
 	})
 	scheme.AddTypeDefaultingFunc(&PreemptionTolerationArgs{}, func(obj interface{}) { SetObjectDefaults_PreemptionTolerationArgs(obj.(*PreemptionTolerationArgs)) })
+	scheme.AddTypeDefaultingFunc(&ScoreByLabelArgs{}, func(obj interface{}) { SetObjectDefaults_ScoreByLabelArgs(obj.(*ScoreByLabelArgs)) })
 	scheme.AddTypeDefaultingFunc(&SySchedArgs{}, func(obj interface{}) { SetObjectDefaults_SySchedArgs(obj.(*SySchedArgs)) })
 	scheme.AddTypeDefaultingFunc(&TargetLoadPackingArgs{}, func(obj interface{}) { SetObjectDefaults_TargetLoadPackingArgs(obj.(*TargetLoadPackingArgs)) })
 	scheme.AddTypeDefaultingFunc(&TopologicalSortArgs{}, func(obj interface{}) { SetObjectDefaults_TopologicalSortArgs(obj.(*TopologicalSortArgs)) })
@@ -60,6 +62,10 @@ func SetObjectDefaults_LowRiskOverCommitmentArgs(in *LowRiskOverCommitmentArgs) 
 	SetDefaults_LowRiskOverCommitmentArgs(in)
 }
 
+func SetObjectDefaults_NetworkAwareDynamicArgs(in *NetworkAwareDynamicArgs) {
+	SetDefaults_NetworkAwareDynamicArgs(in)
+}
+
 func SetObjectDefaults_NetworkOverheadArgs(in *NetworkOverheadArgs) {
 	SetDefaults_NetworkOverheadArgs(in)
 }
@@ -74,6 +80,10 @@ func SetObjectDefaults_NodeResourcesAllocatableArgs(in *NodeResourcesAllocatable
 
 func SetObjectDefaults_PreemptionTolerationArgs(in *PreemptionTolerationArgs) {
 	SetDefaults_PreemptionTolerationArgs(in)
+}
+
+func SetObjectDefaults_ScoreByLabelArgs(in *ScoreByLabelArgs) {
+	SetDefaults_ScoreByLabelArgs(in)
 }
 
 func SetObjectDefaults_SySchedArgs(in *SySchedArgs) {

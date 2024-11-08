@@ -102,6 +102,17 @@ var (
 	DefaultSySchedProfileNamespace = "default"
 	// DefaultSySchedProfileName is the name of the default syscall profile CR for SySched plugin
 	DefaultSySchedProfileName = "all-syscalls"
+
+	// Defaults for ScoreByLabel plugin
+	DefaultLabelKey = "score-by-label"
+
+	// Defaults for NetworkAwareDynamic plugin
+	DefaultAddress            = "localhost"
+	DefaultPort               = "9962"
+	DefaultTimeRangeInMinutes = "1m"
+	DefaultWeightLatency      = "0.3"
+	DefaultWeightForwardBytes = "0.1"
+	DefaultWeightDropBytes    = "0.1"
 )
 
 // SetDefaults_CoschedulingArgs sets the default parameters for Coscheduling plugin.
@@ -249,4 +260,43 @@ func SetDefaults_SySchedArgs(obj *SySchedArgs) {
 	if obj.DefaultProfileName == nil {
 		obj.DefaultProfileName = &DefaultSySchedProfileName
 	}
+}
+
+// SetDefaults_ScoreByLabelArgs sets the default parameters for the ScoreByLabel plugin
+func SetDefaults_ScoreByLabelArgs(obj *ScoreByLabelArgs) {
+	if obj.LabelKey == nil {
+		obj.LabelKey = &DefaultLabelKey
+	}
+}
+
+// SetDefaults_NetworkAwareDynamicArgs sets the default parameters for NetworkAwareDynamic plugin
+func SetDefaults_NetworkAwareDynamicArgs(obj *NetworkAwareDynamicArgs) {
+	if len(obj.Namespaces) == 0 {
+		obj.Namespaces = []string{metav1.NamespaceDefault}
+	}
+
+	if obj.Address == "" {
+		obj.Address = DefaultAddress
+	}
+
+	if obj.Port == "" {
+		obj.Port = DefaultPort
+	}
+
+	if obj.TimeRangeInMinutes == "" {
+		obj.TimeRangeInMinutes = DefaultTimeRangeInMinutes
+	}
+
+	if obj.WeightLatency == "" {
+		obj.WeightLatency = DefaultWeightLatency
+	}
+
+	if obj.WeightForwardBytes == "" {
+		obj.WeightForwardBytes = DefaultWeightForwardBytes
+	}
+
+	if obj.WeightDropBytes == "" {
+		obj.WeightDropBytes = DefaultWeightDropBytes
+	}
+
 }
