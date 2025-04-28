@@ -155,7 +155,7 @@ func (p *PrometheusHandle) CalculateNetworkCost(instance, targetNodeIP string) (
 
 	// Calculate network cost
 	networkCost := ((p.weightLatency * latency) +
-		(p.weightForwardBytes * forwardBytes) +
+		(p.weightForwardBytes * ((1 - forwardBytes)) +
 		(p.weightDropBytes * dropBytes)) * 100
 
 	return networkCost, nil
